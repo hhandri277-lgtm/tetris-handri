@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TETRIS GO</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      height: 100vh;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Orbitron', sans-serif;
+      color: white;
+      position: relative;
+    }
+
+    .city-bg {
+      position: absolute; inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(0,255,255,0.05) 40px, rgba(0,255,255,0.05) 80px),
+                  repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(0,255,255,0.05) 40px, rgba(0,255,255,0.05) 80px);
+      opacity: 0.4; animation: cityPulse 8s ease-in-out infinite; z-index: 1;
+    }
+    @keyframes cityPulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.5; } }
+
+    .block {
+      position: absolute; width: 28px; height: 28px;
+      background: linear-gradient(45deg, #00f5ff, #00aaff);
+      border: 2px solid #00ffff; border-radius: 6px;
+      box-shadow: 0 0 15px #00ffff, inset 0 0 8px rgba(0,255,255,0.5);
+      animation: float 5s infinite ease-in-out; z-index: 2;
+    }
+    .block:nth-child(1) { top: 15%; left: 12%; animation-delay: 0s; }
+    .block:nth-child(2) { top: 25%; left: 75%; animation-delay: 1.2s; }
+    .block:nth-child(3) { top: 60%; left: 8%; animation-delay: 2.4s; }
+    .block:nth-child(4) { top: 40%; left: 82%; animation-delay: 3.6s; }
+    .block:nth-child(5) { top: 70%; left: 65%; animation-delay: 4.8s; }
+    @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-25px) rotate(12deg); } }
+
+    .menu { text-align: center; z-index: 10; position: relative; }
+
+    .logo {
+      width: 130px; height: 130px;
+      background: radial-gradient(circle at 30% 30%, #00ffff, #0088cc);
+      border-radius: 50%; margin: 0 auto 25px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 30px #00ffff, 0 0 60px rgba(0,255,255,0.6);
+      animation: logoPulse 2.5s infinite;
+    }
+    .logo svg { width: 75px; height: 75px; fill: white; }
+    @keyframes logoPulse { 0%, 100% { box-shadow: 0 0 30px #00ffff, 0 0 60px rgba(0,255,255,0.6); } 50% { box-shadow: 0 0 50px #00ffff, 0 0 90px rgba(0,255,255,0.9); } }
+
+    h1 {
+      font-size: 4.8rem; font-weight: 900;
+      background: linear-gradient(90deg, #00f5ff, #00d4ff, #00b7eb);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 20px rgba(0,255,255,0.5);
+      margin-bottom: 45px; letter-spacing: 6px;
+    }
+
+    .btn {
+      display: block; width: 300px; margin: 18px auto; padding: 18px;
+      font-size: 1.5rem; font-weight: 700; color: white;
+      background: rgba(0,200,255,0.12); border: 2px solid #00ffff;
+      border-radius: 14px; cursor: pointer; text-transform: uppercase;
+      letter-spacing: 2.5px; position: relative; overflow: hidden;
+      transition: all 0.4s ease; box-shadow: 0 0 15px rgba(0,255,255,0.5);
+      backdrop-filter: blur(6px);
+    }
+    .btn::before {
+      content: ''; position: absolute; top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0,255,255,0.4), transparent);
+      transition: 0.7s;
+    }
+    .btn:hover::before { left: 100%; }
+    .btn:hover { background: rgba(0,200,255,0.25); box-shadow: 0 0 30px #00ffff; transform: translateY(-4px); }
+    .btn:active { transform: translateY(1px); }
+
+    .bottom-nav {
+      position: absolute; bottom: 25px; left: 30px; right: 30px;
+      display: flex; justify-content: space-between; align-items: center;
+      z-index: 10; font-size: 0.95rem;
+    }
+    .store-btn {
+      background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+      padding: 12px 24px; border-radius: 30px; border: none;
+      color: white; font-weight: bold; font-size: 0.9rem;
+      box-shadow: 0 0 15px rgba(255,107,107,0.6); cursor: pointer;
+      display: flex; align-items: center; gap: 10px; transition: 0.3s;
+    }
+    .store-btn:hover { transform: scale(1.05); box-shadow: 0 0 25px rgba(255,107,107,0.8); }
+    .version { opacity: 0.7; font-size: 0.85rem; }
+
+    .settings {
+      position: absolute; top: 25px; right: 25px;
+      width: 55px; height: 55px; background: rgba(0,255,255,0.15);
+      border: 2px solid #00ffff; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; box-shadow: 0 0 15px rgba(0,255,255,0.4);
+      transition: all 0.4s ease; z-index: 10;
+    }
+    .settings:hover { background: rgba(0,255,255,0.3); transform: rotate(90deg) scale(1.1); }
+
+    .loading-screen {
+      position: fixed; inset: 0; background: rgba(5,10,35,0.98);
+      display: none; justify-content: center; align-items: center;
+      flex-direction: column; z-index: 100; backdrop-filter: blur(12px);
+    }
+    .loader { width: 90px; height: 90px; position: relative; margin-bottom: 35px; }
+    .loader span {
+      position: absolute; width: 22px; height: 22px;
+      background: #00ffff; border-radius: 4px; box-shadow: 0 0 18px #00ffff;
+      animation: tetrisLoad 1.6s infinite;
+    }
+    .loader span:nth-child(1) { top: 0; left: 0; animation-delay: 0s; }
+    .loader span:nth-child(2) { top: 0; left: 34px; animation-delay: 0.2s; }
+    .loader span:nth-child(3) { top: 0; left: 68px; animation-delay: 0.4s; }
+    .loader span:nth-child(4) { top: 34px; left: 68px; animation-delay: 0.6s; }
+    .loader span:nth-child(5) { top: 68px; left: 68px; animation-delay: 0.8s; }
+    .loader span:nth-child(6) { top: 68px; left: 34px; animation-delay: 1s; }
+    .loader span:nth-child(7) { top: 68px; left: 0; animation-delay: 1.2s; }
+    .loader span:nth-child(8) { top: 34px; left: 0; animation-delay: 1.4s; }
+    @keyframes tetrisLoad {
+      0%, 100% { transform: scale(1); background: #00ffff; opacity: 1; }
+      50% { transform: scale(1.6); background: #ff00ff; opacity: 0.7; box-shadow: 0 0 25px #ff00ff; }
+    }
+    .loading-text {
+      font-size: 1.7rem; font-weight: 700;
+      background: linear-gradient(90deg, #00ffff, #ff00ff, #00ffff);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: loadingGlow 1.8s infinite;
+    }
+    @keyframes loadingGlow { 0%, 100% { opacity: 0.9; } 50% { opacity: 1; text-shadow: 0 0 25px #00ffff; } }
+  </style>
+</head>
+<body>
+
+  <div class="city-bg"></div>
+  <div class="block"></div><div class="block"></div><div class="block"></div><div class="block"></div><div class="block"></div>
+
+  <div class="settings" onclick="alert('Settings dibuka!')">
+    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.486.486 0 0 0-.48-.41h-3.84c-.24 0-.45.17-.49.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.488.488 0 0 0-.59.22l-1.92 3.32c-.15.25-.08.56.12.61l2.03 1.58c-.05.3-.07.62-.07.94 0 .33.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.15.25.37.36.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.26.41.49.41h3.84c.24 0 .45-.17.49-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.09.44-.02.59-.22l1.92-3.32c.15-.25.08-.56-.12-.61l-2.03-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+  </div>
+
+  <div class="menu">
+    <div class="logo">
+      <svg viewBox="0 0 100 100"><path d="M15 15h25v25H15zM45 15h25v25H45zM75 15h10v25H75zM15 45h25v25H15zM45 45h40v25H45zM15 75h70v10H15z"/></svg>
+    </div>
+    <h1>TETRIS GO</h1>
+    <button class="btn" onclick="startGame()">PLAY</button>
+    <button class="btn" onclick="startLoading('OPTIONS')">OPTIONS</button>
+    <button class="btn" onclick="startLoading('LEADERBOARD')">LEADERBOARD</button>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="store-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> STORE</button>
+    <div class="version">v1.0.0</div>
+  </div>
+
+  <div class="loading-screen" id="loading">
+    <div class="loader"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="loading-text" id="loadingText">LOADING...</div>
+  </div>
+
+  <script>
+    function startLoading(action) {
+      const loading = document.getElementById('loading');
+      const text = document.getElementById('loadingText');
+      text.textContent = `LOADING ${action}...`;
+      loading.style.display = 'flex';
+      setTimeout(() => loading.style.display = 'none', 2000);
+    }
+
+    function startGame() {
+      const loading = document.getElementById('loading');
+      const text = document.getElementById('loadingText');
+      text.textContent = 'LOADING GAME...';
+      loading.style.display = 'flex';
+
+      setTimeout(() => {
+        window.location.href = 'game.html'; // Pindah ke game.html
+      }, 2500);
+    }
+  </script>
+
+</body>
+</html>
